@@ -1,0 +1,17 @@
+{
+  "name": "project-camp-backend",
+  "version": "1.0.0",
+  "description": "It's a REST API powered project management tool which is highly scalable and production ready.",
+  "keywords": [
+    "backend",
+    "nodejs",
+    "mongoDB",
+    "Api",
+    "practice"
+  ],
+  "license": "ISC",
+  "author": "Shaurav Bhatt",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {}
+}
