@@ -1,4 +1,48 @@
 import Mailgen from "mailgen";
+import nodemailer from "nodemailer";
+
+const sendEmail = async function (options) {
+  if (!options.email || !options.subject || !options.mailgenContent) {
+    throw new Error("Missing required email options");
+  }
+
+  const mailGenerator = new Mailgen({
+    theme: "default",
+    product: {
+      name: "Project Camp",
+      link: "https://github.com/ShauravBhatt/Project-Camp-Project-Management-Tool",
+    },
+  });
+
+  const emailHtml = mailGenerator.generate(options.mailgenContent);
+  const emailTextual = mailGenerator.generatePlaintext(options.mailgenContent);
+
+  const transporter = nodemailer.createTransport({
+    host: process.env.MAILTRAP_SMTP_HOST,
+    port: Number(process.env.MAILTRAP_SMTP_PORT),
+    secure: false,
+    auth: {
+      user: process.env.MAILTRAP_SMTP_USER,
+      pass: process.env.MAILTRAP_SMTP_PASS,
+    },
+  });
+
+  const email = {
+    from: `'${process.env.EMAIL_FROM_NAME}' <${process.env.EMAIL_FROM}>`,
+    to: options.email,
+    subject: options.subject,
+    text: emailTextual,
+    html: emailHtml,
+  };
+
+  try {
+    await transporter.sendMail(email);
+    console.log("Email sent successfully");
+  } catch (err) {
+    console.error("Email failed: ", err.message);
+    throw new Error("Email could not be sent");
+  }
+};
 
 const emailVerificationMailgenContent = function (username, verificationUrl) {
   return {
@@ -41,4 +85,4 @@ const forgotPasswordMailgenContent = function (username, forgotPasswordUrl) {
   };
 };
 
-export { emailVerificationMailgenContent, forgotPasswordMailgenContent };
+export { emailVerificationMailgenContent, forgotPasswordMailgenContent, sendEmail };
