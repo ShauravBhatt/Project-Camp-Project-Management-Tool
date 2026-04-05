@@ -9,15 +9,20 @@ app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 app.use(express.static("public"));
 
 //cors config
-app.use(cors({
+app.use(
+  cors({
     origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(",") : "http://localhost:1573",
-    credentials:true,
-    methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
-    allowedHeaders: ["Authorization","Content-Type"]
-}));
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Authorization", "Content-Type"],
+  }),
+);
 
 //Routes
-import healtcheckRouter from "./routes/healthcheck.routes.js"
-app.use("/api/v1/healthcheck",healtcheckRouter);
+import healtcheckRouter from "./routes/healthcheck.routes.js";
+app.use("/api/v1/healthcheck", healtcheckRouter);
+
+import authRouter from "./routes/auth.routes.js";
+app.use("/api/v1/auth", authRouter);
 
 export default app;
