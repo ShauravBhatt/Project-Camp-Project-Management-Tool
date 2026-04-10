@@ -4,6 +4,7 @@ import {
   loginUser,
   logoutUser,
   getCurrentUser,
+  emailVerification,
 } from "../controllers/auth.controllers.js";
 import { validate } from "../middlewares/validator.middlewares.js";
 import { userLoginValidator, userRegistrationValidator } from "../validators/index.js";
@@ -14,7 +15,8 @@ const router = Router();
 //unsecured routes
 router.route("/register").post(userRegistrationValidator(), validate, registerUser);
 router.route("/login").post(userLoginValidator(), validate, loginUser);
-router.route("/verify-email/:verificationToken")
+router.route("/verify-email/:verificationToken").get(emailVerification);
+
 //secured routes
 router.route("/logout").post(verifyJWT, logoutUser);
 router.route("/current-user").get(verifyJWT, getCurrentUser);
