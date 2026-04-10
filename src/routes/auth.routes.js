@@ -5,6 +5,7 @@ import {
   logoutUser,
   getCurrentUser,
   emailVerification,
+  resendEmailVerification,
 } from "../controllers/auth.controllers.js";
 import { validate } from "../middlewares/validator.middlewares.js";
 import { userLoginValidator, userRegistrationValidator } from "../validators/index.js";
@@ -20,5 +21,6 @@ router.route("/verify-email/:verificationToken").get(emailVerification);
 //secured routes
 router.route("/logout").post(verifyJWT, logoutUser);
 router.route("/current-user").get(verifyJWT, getCurrentUser);
+router.route("/resend-email-verification").post(verifyJWT, resendEmailVerification);
 
 export default router;
