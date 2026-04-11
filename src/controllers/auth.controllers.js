@@ -2,7 +2,11 @@ import { User } from "../models/user.models.js";
 import { ApiError } from "../utils/api-error.js";
 import { ApiResponse } from "../utils/api-response.js";
 import { asyncHandler } from "../utils/async-handler.js";
-import { emailVerificationMailgenContent, sendEmail } from "../utils/mail.js";
+import {
+  emailVerificationMailgenContent,
+  forgotPasswordMailgenContent,
+  sendEmail,
+} from "../utils/mail.js";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
 
@@ -284,6 +288,83 @@ const resetRefreshToken = asyncHandler(async (req, res) => {
   }
 });
 
+const forgotPassword = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    return res
+      .status(200)
+      .json(new ApiResponse(200, {}, "If an account exists, a reset email has been sent"));
+  }
+
+  try {
+    const { unhashedToken, hashedToken, tempTokenExpiry } = user.generateTemporaryToken();
+
+    user.forgotPasswordToken = hashedToken;
+    user.forgotPasswordTokenExpiry = tempTokenExpiry;
+
+    await user.save({ validateBeforeSave: false });
+
+    await sendEmail({
+      email: user.email,
+      subject: "Password reset request",
+      mailgenContent: forgotPasswordMailgenContent(
+        user.username,
+        `${process.env.FORGOT_PASSWORD_REDIRECT_URL}/${unhashedToken}`,
+      ),
+    });
+
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          {},
+          "A password reset link has been sent to your registered email address. If an account exists with the provided email, you will receive the reset instructions shortly.",
+        ),
+      );
+  } catch (err) {
+    console.error("Forgot password email error: ", err.message);
+
+    user.forgotPasswordToken = null;
+    user.forgotPasswordTokenExpiry = null;
+
+    await user.save({ validateBeforeSave: false });
+
+    throw new ApiError(500, "Internal error, try again in a moment", []);
+  }
+});
+
+const resetForgotPassword = asyncHandler(async (req, res) => {
+  const { verificationToken } = req.params;
+  const { newPassword } = req.body;
+
+  if (!verificationToken) {
+    throw new ApiError(400, "Verification token is missing");
+  }
+
+  const hashedToken = crypto.createHash("sha256").update(verificationToken).digest("hex");
+
+  const user = await User.findOne({
+    forgotPasswordToken: hashedToken,
+    forgotPasswordTokenExpiry: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    throw new ApiError(401, "Token is invalid or expired");
+  }
+
+  user.forgotPasswordToken = null;
+  user.forgotPasswordTokenExpiry = null;
+  user.password = newPassword;
+
+  await user.save();
+
+  return res.status(200).json(new ApiResponse(200, {}, "Password reset successfully"));
+});
+
 export {
   registerUser,
   loginUser,
@@ -292,4 +373,6 @@ export {
   emailVerification,
   resendEmailVerification,
   resetRefreshToken,
+  forgotPassword,
+  resetForgotPassword,
 };
