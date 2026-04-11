@@ -61,9 +61,25 @@ const resetForgotPasswordValidator = () => {
   ];
 };
 
+const changePasswordValidator = () => {
+  return [
+    body("oldPassword")
+      .notEmpty()
+      .withMessage("Old password can't be empty")
+      .isLength({ min: 7 })
+      .withMessage("Old Password length must be atleast 7 characters"),
+    body("newPassword")
+      .notEmpty()
+      .withMessage("New password can't be empty")
+      .isLength({ min: 7 })
+      .withMessage("New Password length must be atleast 7 characters"),
+  ];
+};
+
 export {
   userRegistrationValidator,
   userLoginValidator,
   forgotPasswordValidator,
   resetForgotPasswordValidator,
+  changePasswordValidator,
 };

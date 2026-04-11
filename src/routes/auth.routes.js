@@ -9,9 +9,11 @@ import {
   resetRefreshToken,
   forgotPassword,
   resetForgotPassword,
+  changePassword,
 } from "../controllers/auth.controllers.js";
 import { validate } from "../middlewares/validator.middlewares.js";
 import {
+  changePasswordValidator,
   forgotPasswordValidator,
   resetForgotPasswordValidator,
   userLoginValidator,
@@ -35,5 +37,8 @@ router
 router.route("/logout").post(verifyJWT, logoutUser);
 router.route("/current-user").get(verifyJWT, getCurrentUser);
 router.route("/resend-email-verification").post(verifyJWT, resendEmailVerification);
+router
+  .route("/change-password")
+  .post(verifyJWT, changePasswordValidator(), validate, changePassword);
 
 export default router;

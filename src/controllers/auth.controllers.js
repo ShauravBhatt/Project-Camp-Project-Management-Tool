@@ -365,6 +365,35 @@ const resetForgotPassword = asyncHandler(async (req, res) => {
   return res.status(200).json(new ApiResponse(200, {}, "Password reset successfully"));
 });
 
+const changePassword = asyncHandler(async (req, res) => {
+  if (!req.user?._id) {
+    throw new ApiError(401, "Unauthorized access");
+  }
+
+  const user = await User.findById(req.user._id).select("+password");
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  const { oldPassword, newPassword } = req.body;
+
+  if (oldPassword === newPassword) {
+    throw new ApiError(400, "Old password and new password can't be same");
+  }
+
+  const isUserValid = await user.isPasswordCorrect(oldPassword);
+
+  if (!isUserValid) {
+    throw new ApiError(400, "Wrong old password");
+  }
+
+  user.password = newPassword;
+  await user.save();
+
+  return res.status(200).json(new ApiResponse(200, {}, "Password changed successfully"));
+});
+
 export {
   registerUser,
   loginUser,
@@ -375,4 +404,5 @@ export {
   resetRefreshToken,
   forgotPassword,
   resetForgotPassword,
+  changePassword,
 };
