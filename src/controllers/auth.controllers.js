@@ -93,13 +93,17 @@ const loginUser = asyncHandler(async (req, res) => {
   }).select("+password");
 
   if (!user) {
-    throw new ApiError(404, "Invalid username or password");
+    throw new ApiError(404, "User not found with the provided username or email");
+  }
+
+  if(!user.isEmailVerified) {
+    throw new ApiError(401, "Email is not verified. Please verify your email to login");
   }
 
   const isUserValid = await user.isPasswordCorrect(password);
 
   if (!isUserValid) {
-    throw new ApiError(400, "Invalid username or password");
+    throw new ApiError(401, "Invalid username or password");
   }
 
   const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user?._id);
@@ -115,6 +119,7 @@ const loginUser = asyncHandler(async (req, res) => {
   const options = {
     secure: true,
     httpOnly: true,
+    sameSite: "Strict", 
   };
 
   return res
@@ -138,6 +143,7 @@ const logoutUser = asyncHandler(async (req, res) => {
   const options = {
     httpOnly: true,
     secure: true,
+    sameSite: "strict",
   };
 
   return res
@@ -217,8 +223,8 @@ const resendEmailVerification = asyncHandler(async (req, res) => {
       email: user?.email,
       subject: "Please verify your email",
       mailgenContent: emailVerificationMailgenContent(
-        req.username,
-        `${req.protocol}://${req.get("host")}/api/auth/verify-email/${unhashedToken}`,
+        user.username,
+        `${req.protocol}://${req.get("host")}/api/v1/auth/verify-email/${unhashedToken}`,
       ),
     });
 
@@ -275,6 +281,7 @@ const resetRefreshToken = asyncHandler(async (req, res) => {
     const options = {
       httpOnly: true,
       secure: true,
+      same: "strict",
     };
 
     return res

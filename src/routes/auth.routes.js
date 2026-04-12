@@ -30,7 +30,7 @@ router.route("/verify-email/:verificationToken").get(emailVerification);
 router.route("/refresh-token").post(resetRefreshToken);
 router.route("/forgot-password").post(forgotPasswordValidator(), validate, forgotPassword);
 router
-  .route("/reset-password:verificationToken")
+  .route("/reset-password/:verificationToken")
   .post(resetForgotPasswordValidator(), validate, resetForgotPassword);
 
 //secured routes
