@@ -76,10 +76,26 @@ const changePasswordValidator = () => {
   ];
 };
 
+const createProjectValidator = () => {
+  return [
+    body("name")
+      .notEmpty()
+      .withMessage("Project name can't be empty")
+      .isLength({ min: 3 })
+      .withMessage("Project name should be atleast 3 character long"),
+    body("description")
+      .notEmpty()
+      .withMessage("Project description can't be empty")
+      .isLength({ min: 50 })
+      .withMessage("Project description should be atleast 50 character long"),
+  ];
+};
+
 export {
   userRegistrationValidator,
   userLoginValidator,
   forgotPasswordValidator,
   resetForgotPasswordValidator,
   changePasswordValidator,
+  createProjectValidator,
 };
