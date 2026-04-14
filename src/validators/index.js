@@ -91,6 +91,23 @@ const createProjectValidator = () => {
   ];
 };
 
+const updateProjectValidator = () => {
+  return [
+    body("name")
+      .optional({ checkFalsy: true })
+      .notEmpty()
+      .withMessage("Project name can't be empty")
+      .isLength({ min: 3 })
+      .withMessage("Project name should be atleast 3 character long"),
+    body("description")
+      .optional({ checkFalsy: true })
+      .notEmpty()
+      .withMessage("Project description can't be empty")
+      .isLength({ min: 50 })
+      .withMessage("Project description should be atleast 50 character long"),
+  ];
+};
+
 export {
   userRegistrationValidator,
   userLoginValidator,
@@ -98,4 +115,5 @@ export {
   resetForgotPasswordValidator,
   changePasswordValidator,
   createProjectValidator,
+  updateProjectValidator,
 };
